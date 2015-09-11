@@ -1,2 +1,14 @@
 <h1>{{title}}</h1>
 <p>Welcome to {{title}}</p>
+
+<form action="/" method="post">
+  <textarea name="text" id="text" rows="8" cols="40"></textarea>
+  <input class="analysis-btn" type="submit" name="submit" id="" value="submit" />
+</form>
+
+<div class="summary-div">
+  {{#each data}}
+  {{this}}
+
+  {{/each}}
+</div>
