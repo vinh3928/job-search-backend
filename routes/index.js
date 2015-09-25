@@ -22,6 +22,7 @@ var concept_credentials = {
 var personality_insights = watson.personality_insights(personality_credentials);
 var conceptInsights = watson.concept_insights(concept_credentials);
 
+var corpus_id = process.env.CORPUS_ID || '/corpora/public/TEDTalks';
 var graph_id = process.env.GRAPH_ID || '/graphs/wikipedia/en-20120601';
  
 
@@ -44,6 +45,41 @@ router.post('/', function(req, res, next) {
 router.post('/concepts', function(req, res, next) {
   var params = extend({graph: graph_id}, req.body);
   conceptInsights.graphs.annotateText(params, function(err, results) {
+    if (err)
+      return next(err);
+    else
+      res.json(results);
+  });
+});
+
+router.get('/conceptualSearch', function(req, res, next) {
+  var params = extend({ corpus: corpus_id, limit: 10 }, req.query);
+  conceptInsights.corpora.getRelatedDocuments(params, function(err, data) {
+    if (err)
+      return next(err);
+    else {
+      async.parallel(data.results.map(getPassagesAsync), function(err, documentsWithPassages) {
+        if (err)
+          return next(err);
+        else{
+          data.results = documentsWithPassages;
+          res.json(data);
+        }
+      });
+    }
+  });
+});
+
+router.get('/labelSearch', function(req, res, next) {
+  console.log(req.query);
+  var params = extend({
+    corpus: corpus_id,
+    prefix: true,
+    limit: 10,
+    concepts: true
+  }, req.query);
+
+  conceptInsights.corpora.searchByLabel(params, function(err, results) {
     if (err)
       return next(err);
     else
